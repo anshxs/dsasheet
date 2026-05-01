@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DSA Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07080f;
+      --surface: #0d0f1c;
+      --surface2: #131628;
+      --border: rgba(148,163,255,0.08);
+      --border2: rgba(148,163,255,0.15);
+      --text: #dde1ff;
+      --muted: #6b7280;
+      --muted2: #8892a4;
+      --accent: #6ee7b7;
+      --accent2: #818cf8;
+      --link: #60a5fa;
+      --yt: #f87171;
+      --done: #4ade80;
+      --done-bg: rgba(74,222,128,0.08);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+    }
+
+    body {
+      background-image:
+        radial-gradient(ellipse 60% 40% at 20% 0%, rgba(99,102,241,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 80% 100%, rgba(110,231,183,0.04) 0%, transparent 60%);
+    }
+
+    .app { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+    /* ── HEADER ── */
+    .header { margin-bottom: 2rem; }
+
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    h1 span { color: var(--accent2); }
+
+    .header-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .btn-group { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #6d28d9);
+      color: #fff;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted2);
+      border: 1px solid var(--border2);
+    }
+
+    .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 1.25rem 0;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      text-align: center;
+    }
+
+    .stat-card .stat-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+    }
+
+    .stat-card .stat-val.done { color: var(--done); }
+    .stat-card .stat-val.pct { color: var(--accent2); }
+
+    .stat-card .stat-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    /* ── OVERALL PROGRESS ── */
+    .overall-progress {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .overall-progress label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+
+    .prog-track {
+      flex: 1;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4f46e5, #6ee7b7);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .prog-pct {
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px 9px 36px;
+      font-size: 0.85rem;
+      font-family: 'Syne', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: var(--accent2); }
+
+    .filter-tabs { display: flex; gap: 4px; }
+
+    .filter-tab {
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted2);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .filter-tab:hover { color: var(--text); border-color: var(--border2); }
+
+    .filter-tab.active {
+      background: var(--accent2);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .collapse-all-btn {
+      padding: 7px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--muted2);
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .collapse-all-btn:hover { color: var(--text); }
+
+    /* ── CHAPTERS ── */
+    .chapters { display: flex; flex-direction: column; gap: 10px; }
+
+    .chapter {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .chapter:hover { border-color: var(--border2); }
+
+    .chapter-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .chapter-header:hover { background: rgba(255,255,255,0.02); }
+
+    .ch-toggle {
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--muted2);
+      flex-shrink: 0;
+      transition: all 0.2s;
+      font-size: 11px;
+    }
+
+    .chapter.open .ch-toggle { background: rgba(129,140,248,0.2); color: var(--accent2); }
+
+    .ch-title {
+      flex: 1;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .ch-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .ch-count {
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+    }
+
+    .ch-count b { color: var(--done); }
+
+    .ch-prog-wrap {
+      width: 80px;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .ch-prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6ee7b7, #4ade80);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .ch-done-badge {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      background: var(--done-bg);
+      color: var(--done);
+      border-radius: 99px;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid rgba(74,222,128,0.2);
+    }
+
+    /* ── CHAPTER BODY ── */
+    .chapter-body { display: none; border-top: 1px solid var(--border); }
+    .chapter.open .chapter-body { display: block; }
+
+    /* search-visible chapters */
+    .chapter.search-visible .chapter-body { display: block; }
+
+    /* ── SUBCHAPTER ── */
+    .subchapter { border-bottom: 1px solid var(--border); }
+    .subchapter:last-child { border-bottom: none; }
+
+    .sub-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px 10px 20px;
+      cursor: pointer;
+      background: rgba(0,0,0,0.15);
+      transition: background 0.15s;
+      user-select: none;
+    }
+
+    .sub-header:hover { background: rgba(129,140,248,0.04); }
+
+    .sub-toggle {
+      font-size: 9px;
+      color: var(--muted);
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    .subchapter.open .sub-toggle { transform: rotate(90deg); }
+
+    .sub-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted2);
+      letter-spacing: 0.02em;
+      flex: 1;
+    }
+
+    .sub-count {
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+    }
+
+    .sub-count b { color: var(--accent); }
+
+    .sub-items { display: none; }
+    .subchapter.open .sub-items { display: block; }
+
+    /* ── QUESTION ITEM ── */
+    .q-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px 11px 32px;
+      border-bottom: 1px solid rgba(148,163,255,0.04);
+      transition: background 0.12s;
+    }
+
+    .q-item:last-child { border-bottom: none; }
+    .q-item:hover { background: rgba(255,255,255,0.015); }
+
+    .q-item.done { background: rgba(74,222,128,0.02); }
+
+    .q-item.hidden { display: none; }
+
+    /* checkbox */
+    .q-cb {
+      width: 17px; height: 17px;
+      border-radius: 5px;
+      border: 1.5px solid var(--border2);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.15s;
+      background: transparent;
+    }
+
+    .q-cb:checked {
+      background: var(--done);
+      border-color: var(--done);
+    }
+
+    .q-cb:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px; top: 1.5px;
+      width: 6px; height: 10px;
+      border: 2px solid #07080f;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .q-cb:hover:not(:checked) { border-color: var(--accent2); }
+
+    .q-name {
+      flex: 1;
+      font-size: 0.85rem;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .q-item.done .q-name {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: rgba(107,114,128,0.5);
+    }
+
+    .q-links { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+    .q-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.68rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .q-link:hover { transform: translateY(-1px); }
+
+    .q-link img, .q-link svg {
+      width: 12px; height: 12px;
+      flex-shrink: 0;
+    }
+
+    .lk-lc {
+      background: rgba(249,115,22,0.1);
+      color: #f97316;
+      border-color: rgba(249,115,22,0.2);
+    }
+
+    .lk-lc:hover { background: rgba(249,115,22,0.18); }
+
+    .lk-yt {
+      background: rgba(248,113,113,0.1);
+      color: #f87171;
+      border-color: rgba(248,113,113,0.2);
+    }
+
+    .lk-yt:hover { background: rgba(248,113,113,0.18); }
+
+    .lk-gfg {
+      background: rgba(34,197,94,0.1);
+      color: #22c55e;
+      border-color: rgba(34,197,94,0.2);
+    }
+
+    .lk-gfg:hover { background: rgba(34,197,94,0.18); }
+
+    .lk-gh {
+      background: rgba(148,163,184,0.1);
+      color: #94a3b8;
+      border-color: rgba(148,163,184,0.2);
+    }
+
+    .lk-gh:hover { background: rgba(148,163,184,0.18); }
+
+    .lk-cf {
+      background: rgba(96,165,250,0.1);
+      color: #60a5fa;
+      border-color: rgba(96,165,250,0.2);
+    }
+
+    .lk-cf:hover { background: rgba(96,165,250,0.18); }
+
+    .lk-gen {
+      background: rgba(148,163,255,0.08);
+      color: var(--accent2);
+      border-color: rgba(148,163,255,0.15);
+    }
+
+    .lk-gen:hover { background: rgba(148,163,255,0.15); }
+
+    /* ── EMPTY / STATUS STATES ── */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+
+    .empty-state .big { font-size: 2.5rem; margin-bottom: 1rem; }
+    .empty-state p { font-size: 0.9rem; }
+    .empty-state .hint { font-size: 0.78rem; margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(7,8,15,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .loading-overlay.show { display: flex; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(129,140,248,0.2);
+      border-top-color: var(--accent2);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.85rem;
+      color: var(--muted2);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 0.82rem;
+      color: var(--text);
+      z-index: 200;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.25s;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(74,222,128,0.3); color: var(--done); }
+
+    .no-results {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 600px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .ch-prog-wrap { display: none; }
+      .header-top { flex-direction: column; }
+      .btn-group { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-area">
+        <div class="logo-icon">⚡</div>
+        <div>
+          <h1>DSA <span>Tracker</span></h1>
+          <div class="header-sub" id="sheet-label">No sheet loaded · click Load Sheet</div>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" id="load-btn" onclick="loadSheet()">↓ Load Sheet</button>
+        <button class="btn btn-ghost" onclick="clearLocal()">Reset</button>
+      </div>
+    </div>
+
+    <!-- Overall progress -->
+    <div class="overall-progress" style="margin-top:1.25rem;">
+      <label id="prog-label">0 / 0 solved</label>
+      <div class="prog-track">
+        <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+      </div>
+      <div class="prog-pct" id="prog-pct">0%</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-total">—</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val done" id="stat-done">—</div>
+        <div class="stat-label">Solved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-rem">—</div>
+        <div class="stat-label">Remaining</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val pct" id="stat-pct">—</div>
+        <div class="stat-label">Progress</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+      </span>
+      <input type="text" class="search-input" id="search-input" placeholder="Search problems…" oninput="handleSearch(this.value)">
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-tab" onclick="setFilter('pending', this)">Pending</button>
+      <button class="filter-tab" onclick="setFilter('done', this)">Solved</button>
+    </div>
+
+    <button class="collapse-all-btn" id="collapse-btn" onclick="toggleAll()">▾ Collapse All</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="chapters" id="chapters-container"></div>
+
+  <!-- EMPTY STATE -->
+  <div id="empty-state" class="empty-state">
+    <div class="big">📘</div>
+    <p>No sheet loaded yet.</p>
+    <div class="hint">Click "Load Sheet" to fetch data from Google Sheets</div>
+  </div>
+
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Fetching sheet data…</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── CONFIG ─── */
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1gRGKixHVIhP5afZirR4jnLX1PqIE-HXL05g1-XfgwMQ/gviz/tq?tqx=out:csv";
+const STORAGE_KEY = "dsa_tracker_v2";
+
+/* ─── STATE ─── */
+let chapters = [];       // [{id, title, subs:[{id, title, items:[{id,status,problem,link,youtube}]}]}]
+let activeFilter = 'all';
+let searchQuery = '';
+let allCollapsed = false;
+
+/* ─── PERSISTENCE ─── */
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(chapters));
+}
+
+function loadFromStorage() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    if (d) { chapters = JSON.parse(d); return true; }
+  } catch(e) {}
+  return false;
+}
+
+/* ─── CSV PARSING ─── */
+function parseCSV(text) {
+  const rows = [];
+  let cur = '', inQ = false;
+  const cells = [], cols = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (!inQ && ch === ',') { cols.push(cur.trim()); cur = ''; continue; }
+    if (!inQ && (ch === '\n' || ch === '\r')) {
+      cols.push(cur.trim()); cur = '';
+      if (cols.some(c => c)) rows.push([...cols]);
+      cols.length = 0;
+      if (ch === '\r' && text[i+1] === '\n') i++;
+      continue;
+    }
+    cur += ch;
+  }
+  if (cur || cols.length) { cols.push(cur.trim()); if (cols.some(c => c)) rows.push(cols); }
+  return rows;
+}
+
+function isHeaderRow(problem) {
+  return problem.toLowerCase().includes('problem statement') || problem.toLowerCase() === 'problem';
+}
+
+function isSectionRow(status, problem) {
+  if (status !== '') return false;
+  if (!problem) return false;
+  // Numbered section: "1.", "1.1", "Step 1", etc.
+  if (/^(\d+[\.\s]|step\s*\d|chapter\s*\d)/i.test(problem)) return true;
+  // Known keywords
+  const kw = ['array','string','linked list','stack','queue','tree','graph','dp','recursion',
+               'binary','sorting','searching','greedy','heap','trie','backtrack','math','bit',
+               'divide','two pointer','sliding','hashing','basics','advanced'];
+  const low = problem.toLowerCase();
+  return kw.some(k => low.includes(k)) || problem.includes('COMPLETED');
+}
+
+function buildChapters(rows) {
+  const result = [];
+  let chap = null, sub = null, itemId = 0;
+
+  rows.forEach(row => {
+    const status  = (row[0] || '').trim();
+    const problem = (row[1] || '').trim();
+    const link    = (row[2] || '').trim();
+    const youtube = (row[3] || '').trim();
+
+    if (!problem || isHeaderRow(problem)) return;
+
+    // Section/chapter row (no status, looks like a heading)
+    if (isSectionRow(status, problem)) {
+      chap = { id: 'ch_' + result.length, title: problem, subs: [] };
+      sub  = null;
+      result.push(chap);
+      return;
+    }
+
+    // Row has a status + problem → it's a question
+    if (problem && (status === 'Pending' || status === 'Completed' || status === '')) {
+      if (!chap) {
+        chap = { id: 'ch_0', title: 'General', subs: [] };
+        result.push(chap);
+      }
+      if (!sub) {
+        sub = { id: chap.id + '_s0', title: 'Problems', items: [] };
+        chap.subs.push(sub);
+      }
+      sub.items.push({
+        id: itemId++,
+        status: status === 'Completed' ? 'Completed' : 'Pending',
+        problem,
+        link,
+        youtube
+      });
+    }
+  });
+
+  return result;
+}
+
+/* ─── LINK CLASSIFICATION ─── */
+function classifyLink(url) {
+  if (!url) return null;
+  try {
+    const host = new URL(url).hostname.replace('www.','');
+    if (host.includes('leetcode'))    return { cls: 'lk-lc', label: 'LC', icon: lcIcon() };
+    if (host.includes('youtube') || host.includes('youtu.be')) return { cls: 'lk-yt', label: 'YT', icon: ytIcon() };
+    if (host.includes('geeksforgeeks') || host.includes('gfg')) return { cls: 'lk-gfg', label: 'GFG', icon: gfgIcon() };
+    if (host.includes('github'))      return { cls: 'lk-gh', label: 'GH', icon: ghIcon() };
+    if (host.includes('codeforces')) return { cls: 'lk-cf', label: 'CF', icon: cfIcon() };
+    return { cls: 'lk-gen', label: 'Link', icon: linkIcon() };
+  } catch(e) {
+    return { cls: 'lk-gen', label: 'Link', icon: linkIcon() };
+  }
+}
+
+/* ─── SVG ICONS ─── */
+const svgWrap = (d, col) =>
+  `<svg viewBox="0 0 24 24" fill="${col}" xmlns="http://www.w3.org/2000/svg">${d}</svg>`;
+
+function lcIcon() {
+  return svgWrap('<path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/>', '#f97316');
+}
+
+function ytIcon() {
+  return svgWrap('<path d="M23.499 6.203a3.008 3.008 0 0 0-2.089-2.089c-1.87-.501-9.4-.501-9.4-.501s-7.509 0-9.399.501A3.008 3.008 0 0 0 .5 6.203a31.54 31.54 0 0 0-.5 5.795 31.54 31.54 0 0 0 .5 5.796 3.008 3.008 0 0 0 2.11 2.088c1.87.502 9.4.502 9.4.502s7.509 0 9.399-.502a3.008 3.008 0 0 0 2.09-2.088 31.54 31.54 0 0 0 .5-5.796 31.54 31.54 0 0 0-.5-5.795zM9.609 15.601V8.408l6.264 3.602z"/>', '#f87171');
+}
+
+function gfgIcon() {
+  return svgWrap('<path d="M21.45 14.315c-.143.28-.334.532-.565.745a3.691 3.691 0 0 1-1.104.695 4.51 4.51 0 0 1-3.116-.016 3.79 3.79 0 0 1-1.106-.703L15.44 15c-.717-.693-1.541-1.033-2.44-1.033-.9 0-1.718.34-2.438 1.027l-.12.098a3.702 3.702 0 0 1-1.108.703 4.51 4.51 0 0 1-3.116.016 3.708 3.708 0 0 1-1.106-.695 3.435 3.435 0 0 1-.564-.745L3 15.48c.24.47.56.897.95 1.257a5.817 5.817 0 0 0 3.884 1.42 5.47 5.47 0 0 0 2.188-.432 6.316 6.316 0 0 0 1.815-1.25c.42-.406.86-.61 1.164-.61.306 0 .748.204 1.168.61a6.316 6.316 0 0 0 1.815 1.25 5.47 5.47 0 0 0 2.188.432 5.817 5.817 0 0 0 3.884-1.42c.39-.36.71-.788.95-1.257zM21.45 9.685a3.435 3.435 0 0 0-.564-.744 3.691 3.691 0 0 0-1.104-.696 4.51 4.51 0 0 0-3.116.016 3.79 3.79 0 0 0-1.106.703l-.12.098C14.722 9.748 13.9 10.088 13 10.088c-.9 0-1.723-.34-2.44-1.026l-.12-.098a3.702 3.702 0 0 0-1.108-.703 4.51 4.51 0 0 0-3.116-.016 3.708 3.708 0 0 0-1.106.696 3.435 3.435 0 0 0-.564.744L3 8.52c.24-.47.56-.897.95-1.257A5.817 5.817 0 0 1 7.834 5.84a5.47 5.47 0 0 1 2.188.433 6.316 6.316 0 0 1 1.815 1.25c.42.405.86.61 1.164.61.306 0 .748-.205 1.168-.61a6.316 6.316 0 0 1 1.815-1.25 5.47 5.47 0 0 1 2.188-.433 5.817 5.817 0 0 1 3.884 1.42c.39.36.71.787.95 1.257z"/>', '#22c55e');
+}
+
+function ghIcon() {
+  return svgWrap('<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>', '#94a3b8');
+}
+
+function cfIcon() {
+  return svgWrap('<path d="M5.603 13.504a1.5 1.5 0 01-1.5 1.5H1.5a1.5 1.5 0 01-1.5-1.5V1.5A1.5 1.5 0 011.5 0h2.603a1.5 1.5 0 011.5 1.5zm7.198 5.25a1.5 1.5 0 01-1.5 1.5H8.698a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h2.603a1.5 1.5 0 011.5 1.5zm7.199-9.75a1.5 1.5 0 01-1.5 1.5H15.9a1.5 1.5 0 01-1.5-1.5V1.5A1.5 1.5 0 0115.9 0h2.6a1.5 1.5 0 011.5 1.5z"/>', '#60a5fa');
+}
+
+function linkIcon() {
+  return svgWrap('<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>', '#818cf8');
+}
+
+/* ─── RENDER ─── */
+function getStats() {
+  let total = 0, done = 0;
+  chapters.forEach(ch => ch.subs.forEach(s => s.items.forEach(it => {
+    total++;
+    if (it.status === 'Completed') done++;
+  })));
+  return { total, done, rem: total - done };
+}
+
+function updateStats() {
+  const { total, done, rem } = getStats();
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('stat-total').textContent = total || '—';
+  document.getElementById('stat-done').textContent = done || '—';
+  document.getElementById('stat-rem').textContent = rem || '—';
+  document.getElementById('stat-pct').textContent = total ? pct + '%' : '—';
+  document.getElementById('prog-label').textContent = `${done} / ${total} solved`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+}
+
+function renderChapterProgress(ch) {
+  let total = 0, done = 0;
+  ch.subs.forEach(s => s.items.forEach(it => {
+    total++;
+    if (it.status === 'Completed') done++;
+  }));
+  const pct = total ? Math.round(done / total * 100) : 0;
+  return { total, done, pct };
+}
+
+function renderLinks(item) {
+  let html = '';
+  if (item.link) {
+    const info = classifyLink(item.link);
+    if (info) html += `<a class="q-link ${info.cls}" href="${escHtml(item.link)}" target="_blank" rel="noopener">${info.icon}${info.label}</a>`;
+  }
+  if (item.youtube) {
+    const info = classifyLink(item.youtube);
+    const cls = info ? info.cls : 'lk-yt';
+    html += `<a class="q-link ${cls}" href="${escHtml(item.youtube)}" target="_blank" rel="noopener">${ytIcon()}YT</a>`;
+  }
+  return html;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const container = document.getElementById('chapters-container');
+  const empty = document.getElementById('empty-state');
+
+  if (!chapters.length) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    updateStats();
+    return;
+  }
+
+  empty.style.display = 'none';
+  container.innerHTML = '';
+
+  chapters.forEach(ch => {
+    const { total, done, pct } = renderChapterProgress(ch);
+    const isOpen = ch.open !== false;
+
+    const chDiv = document.createElement('div');
+    chDiv.className = 'chapter' + (isOpen ? ' open' : '');
+    chDiv.dataset.chId = ch.id;
+
+    chDiv.innerHTML = `
+      <div class="chapter-header" onclick="toggleChapter('${ch.id}')">
+        <div class="ch-toggle">${isOpen ? '▾' : '▸'}</div>
+        <div class="ch-title">${escHtml(ch.title)}</div>
+        <div class="ch-meta">
+          <div class="ch-count"><b>${done}</b>/${total}</div>
+          <div class="ch-prog-wrap"><div class="ch-prog-fill" style="width:${pct}%"></div></div>
+          ${pct === 100 && total > 0 ? '<span class="ch-done-badge">✓ done</span>' : ''}
+        </div>
+      </div>
+      <div class="chapter-body" id="body_${ch.id}"></div>
+    `;
+
+    const body = chDiv.querySelector(`#body_${ch.id}`);
+
+    ch.subs.forEach(sub => {
+      const subDone = sub.items.filter(i => i.status === 'Completed').length;
+      const subOpen = sub.open !== false;
+
+      const subDiv = document.createElement('div');
+      subDiv.className = 'subchapter' + (subOpen ? ' open' : '');
+      subDiv.dataset.subId = sub.id;
+
+      let itemsHtml = '';
+      sub.items.forEach(item => {
+        const isDone = item.status === 'Completed';
+        const hidden = shouldHideItem(item) ? ' hidden' : '';
+        itemsHtml += `
+          <div class="q-item${isDone ? ' done' : ''}${hidden}" data-item-id="${item.id}" data-problem="${escHtml(item.problem.toLowerCase())}">
+            <input type="checkbox" class="q-cb" ${isDone ? 'checked' : ''} onchange="toggleItem(${item.id})">
+            <div class="q-name">${escHtml(item.problem)}</div>
+            <div class="q-links">${renderLinks(item)}</div>
+          </div>
+        `;
+      });
+
+      subDiv.innerHTML = `
+        <div class="sub-header" onclick="toggleSub('${sub.id}')">
+          <span class="sub-toggle">▶</span>
+          <div class="sub-title">${escHtml(sub.title)}</div>
+          <div class="sub-count"><b>${subDone}</b>/${sub.items.length}</div>
+        </div>
+        <div class="sub-items">${itemsHtml}</div>
+      `;
+
+      body.appendChild(subDiv);
+    });
+
+    // Check for no-results
+    const visCount = body.querySelectorAll('.q-item:not(.hidden)').length;
+    if (searchQuery && visCount === 0) {
+      chDiv.classList.add('hidden');
+    }
+
+    container.appendChild(chDiv);
+  });
+
+  updateStats();
+  applySearch();
+}
+
+function shouldHideItem(item) {
+  const matchFilter = (
+    activeFilter === 'all' ||
+    (activeFilter === 'done' && item.status === 'Completed') ||
+    (activeFilter === 'pending' && item.status !== 'Completed')
+  );
+  const matchSearch = !searchQuery || item.problem.toLowerCase().includes(searchQuery.toLowerCase());
+  return !matchFilter || !matchSearch;
+}
+
+/* ─── INTERACTIONS ─── */
+function toggleChapter(id) {
+  const chDiv = document.querySelector(`[data-ch-id="${id}"]`);
+  if (!chDiv) return;
+  const isOpen = chDiv.classList.contains('open');
+  chDiv.classList.toggle('open', !isOpen);
+  const toggle = chDiv.querySelector('.ch-toggle');
+  toggle.textContent = isOpen ? '▸' : '▾';
+  const ch = chapters.find(c => c.id === id);
+  if (ch) ch.open = !isOpen;
+  save();
+}
+
+function toggleSub(id) {
+  const subDiv = document.querySelector(`[data-sub-id="${id}"]`);
+  if (!subDiv) return;
+  subDiv.classList.toggle('open');
+  chapters.forEach(ch => ch.subs.forEach(s => {
+    if (s.id === id) s.open = subDiv.classList.contains('open');
+  }));
+  save();
+}
+
+function toggleItem(itemId) {
+  let changed = null;
+  chapters.forEach(ch => ch.subs.forEach(s => s.items.forEach(it => {
+    if (it.id === itemId) {
+      it.status = it.status === 'Completed' ? 'Pending' : 'Completed';
+      changed = it;
+    }
+  })));
+  save();
+  render();
+  if (changed) showToast(changed.status === 'Completed' ? '✓ Marked as solved!' : 'Marked as pending', changed.status === 'Completed');
+}
+
+function toggleAll() {
+  allCollapsed = !allCollapsed;
+  document.getElementById('collapse-btn').textContent = allCollapsed ? '▸ Expand All' : '▾ Collapse All';
+  chapters.forEach(ch => ch.open = !allCollapsed);
+  save();
+  render();
+}
+
+/* ─── SEARCH & FILTER ─── */
+function handleSearch(val) {
+  searchQuery = val;
+  applySearch();
+}
+
+function applySearch() {
+  document.querySelectorAll('.q-item').forEach(el => {
+    const problem = el.dataset.problem || '';
+    const itemId = parseInt(el.dataset.itemId);
+    let item = null;
+    chapters.forEach(ch => ch.subs.forEach(s => s.items.forEach(it => {
+      if (it.id === itemId) item = it;
+    })));
+    if (item) el.classList.toggle('hidden', shouldHideItem(item));
+  });
+
+  // Show/hide chapters that have visible items
+  document.querySelectorAll('.chapter').forEach(chDiv => {
+    const visItems = chDiv.querySelectorAll('.q-item:not(.hidden)');
+    chDiv.style.display = visItems.length === 0 && (searchQuery || activeFilter !== 'all') ? 'none' : '';
+    if (searchQuery && visItems.length > 0) {
+      chDiv.classList.add('open');
+      chDiv.querySelector('.ch-toggle').textContent = '▾';
+      chDiv.querySelectorAll('.subchapter').forEach(s => s.classList.add('open'));
+    }
+  });
+
+  const totalVisible = document.querySelectorAll('.q-item:not(.hidden)').length;
+  let noRes = document.getElementById('no-results');
+  if (totalVisible === 0 && (searchQuery || activeFilter !== 'all')) {
+    if (!noRes) {
+      noRes = document.createElement('div');
+      noRes.id = 'no-results';
+      noRes.className = 'no-results';
+      noRes.textContent = `No problems found for "${searchQuery || activeFilter}"`;
+      document.getElementById('chapters-container').appendChild(noRes);
+    }
+  } else if (noRes) noRes.remove();
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  applySearch();
+}
+
+/* ─── SHEET LOADING ─── */
+async function loadSheet() {
+  showLoading(true);
+  const btn = document.getElementById('load-btn');
+  btn.disabled = true;
+  try {
+    const res = await fetch(SHEET_URL);
+    if (!res.ok) throw new Error('Network error');
+    const text = await res.text();
+    const rows = parseCSV(text);
+    chapters = buildChapters(rows);
+    chapters.forEach(ch => {
+      ch.open = true;
+      ch.subs.forEach(s => s.open = true);
+    });
+    save();
+    render();
+    const { total, done } = getStats();
+    document.getElementById('sheet-label').textContent = `Striver's DSA Sheet · ${total} problems`;
+    showToast(`✓ Loaded ${total} problems`, true);
+  } catch(e) {
+    showToast('Failed to load sheet. Check connection.');
+    console.error(e);
+  } finally {
+    showLoading(false);
+    btn.disabled = false;
+  }
+}
+
+function clearLocal() {
+  if (!confirm('Reset all progress? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  chapters = [];
+  searchQuery = '';
+  document.getElementById('search-input').value = '';
+  render();
+  showToast('Progress reset.');
+}
+
+/* ─── UI HELPERS ─── */
+function showLoading(show) {
+  document.getElementById('loading').classList.toggle('show', show);
+}
+
+let toastTimer;
+function showToast(msg, success = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (success ? ' success' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ─── BOOT ─── */
+(function init() {
+  if (loadFromStorage()) {
+    const { total, done } = getStats();
+    if (total > 0) document.getElementById('sheet-label').textContent = `Striver's DSA Sheet · ${total} problems`;
+    render();
+  } else {
+    updateStats();
+  }
+})();
+</script>
+</body>
+</html>
