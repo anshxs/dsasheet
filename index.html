@@ -731,28 +731,17 @@ function loadFromStorage() {
 
 /* ─── CSV PARSING ─── */
 function parseCSV(text) {
-  const rows = [];
-  let cur = '', inQ = false;
-  const cells = [], cols = [];
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (ch === '"') { inQ = !inQ; continue; }
-    if (!inQ && ch === ',') { cols.push(cur.trim()); cur = ''; continue; }
-    if (!inQ && (ch === '\n' || ch === '\r')) {
-      cols.push(cur.trim()); cur = '';
-      if (cols.some(c => c)) rows.push([...cols]);
-      cols.length = 0;
-      if (ch === '\r' && text[i+1] === '\n') i++;
-      continue;
-    }
-    cur += ch;
-  }
-  if (cur || cols.length) { cols.push(cur.trim()); if (cols.some(c => c)) rows.push(cols); }
-  return rows;
+  return text
+    .split(/\r?\n/)
+    .map(line =>
+      line
+        .split(',')
+        .map(cell => cell.replace(/^"|"$/g, '').trim())
+    )
+    .filter(row => row.some(cell => cell !== ''));
 }
 
 function isHeaderRow(problem) {
-  return problem.toLowerCase().includes('problem statement') || problem.toLowerCase() === 'problem';
 }
 
 function isSectionRow(status, problem) {
@@ -770,42 +759,100 @@ function isSectionRow(status, problem) {
 
 function buildChapters(rows) {
   const result = [];
-  let chap = null, sub = null, itemId = 0;
+  let currentChapter = null;
+  let currentSub = null;
+  let itemId = 0;
+
+  const isProgressRow = (txt) =>
+    /^completed:\s*\d+\/\d+/i.test(txt);
+
+  const isChapter = (txt) =>
+    /^\d+\.\s+/.test(txt); // "1. Basics"
+
+  const isSubChapter = (txt) =>
+    /^\d+\.\d+/.test(txt); // "1.1 Time..."
+
+  const isHeader = (txt) =>
+    txt.toLowerCase().includes("problem statement") ||
+    txt.toLowerCase().includes("leetcode / gfg");
 
   rows.forEach(row => {
-    const status  = (row[0] || '').trim();
+    const rawStatus = (row[0] || '').trim();
     const problem = (row[1] || '').trim();
-    const link    = (row[2] || '').trim();
+    const link = (row[2] || '').trim();
     const youtube = (row[3] || '').trim();
 
-    if (!problem || isHeaderRow(problem)) return;
+    if (!problem) return;
 
-    // Section/chapter row (no status, looks like a heading)
-    if (isSectionRow(status, problem)) {
-      chap = { id: 'ch_' + result.length, title: problem, subs: [] };
-      sub  = null;
-      result.push(chap);
+    // ignore metadata rows
+    if (isProgressRow(problem)) return;
+
+    // skip headers
+    if (isHeader(problem)) return;
+
+    // ── CHAPTER ──
+    if (isChapter(problem)) {
+      currentChapter = {
+        id: 'ch_' + result.length,
+        title: problem,
+        subs: []
+      };
+      result.push(currentChapter);
+      currentSub = null;
       return;
     }
 
-    // Row has a status + problem → it's a question
-    if (problem && (status === 'Pending' || status === 'Completed' || status === '')) {
-      if (!chap) {
-        chap = { id: 'ch_0', title: 'General', subs: [] };
-        result.push(chap);
+    // ── SUBCHAPTER ──
+    if (isSubChapter(problem)) {
+      if (!currentChapter) {
+        currentChapter = {
+          id: 'ch_0',
+          title: 'General',
+          subs: []
+        };
+        result.push(currentChapter);
       }
-      if (!sub) {
-        sub = { id: chap.id + '_s0', title: 'Problems', items: [] };
-        chap.subs.push(sub);
-      }
-      sub.items.push({
-        id: itemId++,
-        status: status === 'Completed' ? 'Completed' : 'Pending',
-        problem,
-        link,
-        youtube
-      });
+
+      currentSub = {
+        id: currentChapter.id + '_s' + currentChapter.subs.length,
+        title: problem,
+        items: []
+      };
+
+      currentChapter.subs.push(currentSub);
+      return;
     }
+
+    // ── QUESTION ITEM ──
+    const status = rawStatus.toLowerCase().includes('completed')
+      ? 'Completed'
+      : 'Pending';
+
+    if (!currentChapter) {
+      currentChapter = {
+        id: 'ch_0',
+        title: 'General',
+        subs: []
+      };
+      result.push(currentChapter);
+    }
+
+    if (!currentSub) {
+      currentSub = {
+        id: currentChapter.id + '_s0',
+        title: 'Problems',
+        items: []
+      };
+      currentChapter.subs.push(currentSub);
+    }
+
+    currentSub.items.push({
+      id: itemId++,
+      status,
+      problem,
+      link,
+      youtube
+    });
   });
 
   return result;
